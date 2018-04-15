@@ -287,9 +287,9 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // {...} is shorthand for creating a vector, so auto x1 = {1.0, 2.0}
   // creates a 2 element double vector.
 
-  // To take care of the 100 ms delay, we use not the solution at index 1 but
+  // To take care of the 100 ms delay, we do not use the solution at index 0, but
   // compute the desired "future" result.
-  int index_offset = 0; //(int) ceil(dt / 0.1);
+  int index_offset = (int) ceil(dt / 0.1);
 
-  return {solution.x[delta_start + 1 + index_offset], solution.x[a_start + 1 + index_offset]};
+  return {solution.x[delta_start + index_offset], solution.x[a_start + index_offset]};
 }
