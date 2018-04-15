@@ -65,6 +65,30 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+
+// Transform Coordinate System from Particle filter project
+void transformCoordinateSystem(const std::vector<double> &reference, std::vector<double> &object) {
+
+  double new_x, new_y;
+  if(reference.size() != 3 || object.size() != 2) {
+    std::cout << "Error in transformCoordinateSystem" << std::endl;
+    return;
+  }
+
+  // This will implement the homogenous transformation in 2d
+  double centered_x = object[0] - reference[0];
+  double centered_y = object[1] - reference[1];
+  double psi = reference[2];
+
+  new_x = centered_x * std::cos(psi) + centered_y * std::sin(psi);
+  new_y = -centered_x * std::sin(psi) + centered_y * std::cos(psi);
+
+  object[0] = new_x;
+  object[1] = new_y;
+}
+
+
+
 int main() {
   uWS::Hub h;
 
@@ -87,19 +111,58 @@ int main() {
           // j[1] is the data JSON object
           vector<double> ptsx = j[1]["ptsx"];
           vector<double> ptsy = j[1]["ptsy"];
+
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
+          // First transform the waypoints from map coordinate system into car coordinate system
+          std::vector<double> carCoords({px, py, psi});
+
+          size_t num_pts = ptsx.size();
+          Eigen::VectorXd carCoordX(num_pts);
+          Eigen::VectorXd carCoordY(num_pts);
+
+          for(size_t i = 0; i < num_pts; i++) {
+            // Iterate waypoints and transform
+            std::vector<double> object({ptsx[i], ptsy[i]});
+            transformCoordinateSystem(carCoords, object);
+
+            carCoordX[i] = object[0];
+            carCoordY[i] = object[1];
+          }
+
+          // Fit a 3rd order poly into the points
+          auto coeffs = polyfit(carCoordX, carCoordY, 3);
+
+          // For debug reasons, display the poly in green
+          bool debug_poly_display = false;
+
+          // calculate the cross track error
+          double cte = polyeval(coeffs, 0);
+
+          //calculate the orientation error
+          double epsi = psi - atan(coeffs[1]);
+
           /*
-          * TODO: Calculate steering angle and throttle using MPC.
+          * Calculate steering angle and throttle using MPC.
           *
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+
+          Eigen::VectorXd state(6);
+          // The state is meant to be in vehicle coordinate system,
+          // so the x,y and psi values are set to 0 (we look straight forward).
+          // The velocity, cross track error and error of steering angle is
+          // pushed into the state.
+          state << 0, 0, 0, v*2, cte, epsi;
+
+          auto result = mpc.Solve(state, coeffs);
+
+          double steer_value = -result[0] / deg2rad(25);
+          double throttle_value = result[1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -107,22 +170,37 @@ int main() {
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
 
-          //Display the MPC predicted trajectory 
+          // Display the MPC predicted trajectory
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
+          if(debug_poly_display) {
+            // This code will paint the 3rd order polynomial as the green line
+             for(size_t i = 0; i < num_pts; i++) {
+               mpc_x_vals.push_back(carCoordX[i]);
+               mpc_y_vals.push_back(polyeval(coeffs, carCoordX[i]));
+             }
+           }
+          else {
+            mpc_x_vals = mpc.mpc_x;
+            mpc_y_vals = mpc.mpc_y;
+          }
 
           msgJson["mpc_x"] = mpc_x_vals;
           msgJson["mpc_y"] = mpc_y_vals;
 
-          //Display the waypoints/reference line
+          // Display the waypoints/reference line
           vector<double> next_x_vals;
           vector<double> next_y_vals;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
+          for(int i=0;i<ptsx.size();i++){
+            next_x_vals.push_back(carCoordX[i]);
+            next_y_vals.push_back(carCoordY[i]);
+          }
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
@@ -139,7 +217,7 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          this_thread::sleep_for(chrono::milliseconds(100));
+          this_thread::sleep_for(chrono::milliseconds(0));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
