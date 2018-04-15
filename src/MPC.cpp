@@ -8,9 +8,9 @@ using CppAD::AD;
 // Set the timestep length and duration
 // N * dt results to the time in seconds of the future horizon
 // Maybe just look 2 seconds in the future with N = 20 and dt = 0.1
-size_t N = 20;
+size_t N = 10;
 double dt = 0.1;
-double ref_v = 50;
+double ref_v = 60;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -55,14 +55,14 @@ class FG_eval {
     // Define the cost related the reference state and
     // any anything you think may be beneficial.
 
-    const double penalize_epsi = 100.0;
-    const double penalize_cte = 100.0;
+    const double penalize_epsi = 5.0;
+    const double penalize_cte = 0.5; // 0.75
     const double penalize_ref_v_diff = 1.0;
 
-    const double penalize_steer_usage = 10.0;
+    const double penalize_steer_usage = 0.5; // 1.0, 0.5
     const double penalize_pedal_usage = 1.0;
 
-    const double penalize_sequencial_steer_diffs = 100.0;
+    const double penalize_sequencial_steer_diffs = 200.0; // 400, 500
     const double penalize_sequencial_v_diffs = 1.0;
 
     // The part of the cost based on the reference state.
@@ -286,5 +286,10 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   //
   // {...} is shorthand for creating a vector, so auto x1 = {1.0, 2.0}
   // creates a 2 element double vector.
-  return {solution.x[delta_start + 1], solution.x[a_start + 1]};
+
+  // To take care of the 100 ms delay, we use not the solution at index 1 but
+  // compute the desired "future" result.
+  int index_offset = 0; //(int) ceil(dt / 0.1);
+
+  return {solution.x[delta_start + 1 + index_offset], solution.x[a_start + 1 + index_offset]};
 }
