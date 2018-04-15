@@ -10,7 +10,7 @@ using CppAD::AD;
 // Maybe just look 2 seconds in the future with N = 20 and dt = 0.1
 size_t N = 10;
 double dt = 0.1;
-double ref_v = 60;
+double ref_v = 45;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -56,13 +56,13 @@ class FG_eval {
     // any anything you think may be beneficial.
 
     const double penalize_epsi = 5.0;
-    const double penalize_cte = 0.5; // 0.75
+    const double penalize_cte = 0.5;
     const double penalize_ref_v_diff = 1.0;
 
-    const double penalize_steer_usage = 0.5; // 1.0, 0.5
-    const double penalize_pedal_usage = 1.0;
+    const double penalize_steer_usage = 0.5;
+    const double penalize_pedal_usage = 0.1;
 
-    const double penalize_sequencial_steer_diffs = 200.0; // 400, 500
+    const double penalize_sequencial_steer_diffs = 200.0;
     const double penalize_sequencial_v_diffs = 1.0;
 
     // The part of the cost based on the reference state.

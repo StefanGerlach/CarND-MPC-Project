@@ -157,7 +157,7 @@ int main() {
           // so the x,y and psi values are set to 0 (we look straight forward).
           // The velocity, cross track error and error of steering angle is
           // pushed into the state.
-          state << 0, 0, 0, v*2, cte, epsi;
+          state << 0, 0, 0, v, cte, epsi;
 
           auto result = mpc.Solve(state, coeffs);
 
