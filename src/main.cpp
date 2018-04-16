@@ -142,7 +142,11 @@ int main() {
           // calculate the cross track error
           double cte = polyeval(coeffs, 0);
 
-          //calculate the orientation error
+          // Calculate the orientation error by computing the orientation
+          // of the polynomial and 'comparing' it to the cars orientation.
+          // At this point a polynomial with order=1 (straight line)
+          // would be sufficient to compute the first derivate for the
+          // orientation of the line. 
           double epsi = psi - atan(coeffs[1]);
 
           /*
