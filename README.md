@@ -72,7 +72,7 @@ The definition and fine-tuning of parameters in the Cost-Function will lead to a
 - penalize_ref_v_diff = 1.0
 
 - penalize_steer_usage = 0.5
-- penalize_pedal_usage = 0.
+- penalize_pedal_usage = 0.1
 
 - penalize_sequencial_steer_diffs = 200.0
 - penalize_sequencial_v_diffs = 1.0
