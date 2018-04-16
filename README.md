@@ -1,7 +1,39 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
+[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
+[//]: # (Image References)
+
+[image1]: ./documentation/YT_Link.png "YT Link"
+
+[![YTLinkThumbnail][image1]](https://youtu.be/jsNbhTJOigY "Video Title")
+(Click on this image to open Youtube video.)
+
+
+Overview
 ---
+
+This repository contains my solution of the Udacity Self Driving Car Nanodegree Model Predictive Control Project. The target of this project is to create a Model Predictive Control module that smoothly can drive the tracks in the simulator application. 
+
+To solve this problem, the simulator sends the waypoints (which are the simulated output of the path planning module) of the track to the C++ programm, which are then preprocessed and fed into the MPC module to control the vehicles actuators 'steer' and 'throttle'.
+
+In the video, the ground truth waypoints are displayed as a yellow line, whereas the predicted trajectory of the MPC is painted as the green line. 
+
+
+Programm and Processing Pipeline
+---
+
+Since the Udacity Self Driving Car Nanodegree Simulator is sending the grund truth waypoints to follow, it includes the vehicle perception, localization and path planning in this project. The main part of the C++ programm is to control the vehicles actuators 'steering' and 'throttle'. 
+
+These controls are being constrained within the range of [-25 °, +25 °] for the steering angle and [-1, +1] for the throttle control (where +1 means full acceleration and -1 full brake).
+
+To control the vehicle based on the simulator given waypoints the following steps are done:
+
+
+### Waypoint Preprocessing
+
+
+
 
 ## Dependencies
 
