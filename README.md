@@ -5,6 +5,7 @@ Self-Driving Car Engineer Nanodegree Program
 [//]: # (Image References)
 
 [image1]: ./documentation/YT_Link.png "YT Link"
+[image2]: ./documentation/polynomial_Lession19.png "Poly"
 
 [![YTLinkThumbnail][image1]](https://youtu.be/jsNbhTJOigY "Video Title")
 (Click on this image to open Youtube video.)
@@ -36,10 +37,16 @@ Since the waypoints are in the simulator map coordinate system, these points are
 
 ### Polynonmial Fitting 
 
-After transformation of the waypoints, a polinomial of 3rd order is fitted into them. The given function polyfit(), which is adapted from [this source](https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L676-L716) is used for this.
+After transformation of the waypoints, a polinomial of 3rd order is fitted into them. The given function polyfit(), which is adapted from [this source](https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L676-L716), is used for this.
 
+![PolyThumbnail][image2]
+(Image from Udacity Self Driving Car Nanodegree course material lession 19)
 
+### State definition
 
+The current state of the vehicle is described by the current velocity, the current cross track error and the current orientation error. The simulator is sending the current velocity via 'speed' entry, so only the cross track error (CTE) and orientation error have to be computed. 
+
+The CTE is simply computed by evaluating the polynomial coefficients at x position 0. The orientation error is computed using arctan of the quadratic component of the polynomial coefficients. 
 
 
 
