@@ -6,6 +6,8 @@ Self-Driving Car Engineer Nanodegree Program
 
 [image1]: ./documentation/YT_Link.png "YT Link"
 [image2]: ./documentation/polynomial_Lession19.png "Poly"
+[image3]: ./documentation/MPC_Overview_Lession20.png "Kinetmatic Model"
+[image4]: ./documentation/Smooth_Steer_Lession20.png "Smooth Steering"
 
 [![YTLinkThumbnail][image1]](https://youtu.be/jsNbhTJOigY "Video Title")
 (Click on this image to open Youtube video.)
@@ -46,7 +48,52 @@ After transformation of the waypoints, a polinomial of 3rd order is fitted into 
 
 The current state of the vehicle is described by the current velocity, the current cross track error and the current orientation error. The simulator is sending the current velocity via 'speed' entry, so only the cross track error (CTE) and orientation error have to be computed. 
 
-The CTE is simply computed by evaluating the polynomial coefficients at x position 0. The orientation error is computed using arctan of the quadratic component of the polynomial coefficients. 
+The CTE is simply computed by evaluating the polynomial coefficients at x position 0. The orientation error is computed using the given formula of the course material. 
+
+### Kinematic Model definition 
+
+The Model Predictive Control uses a kinetmatic model to predict where the vehicle will move in 'future' time steps. This model is a really rough approximate of the reality and thus evaluated again for every timestep. The following picture shows, how the state, which means: position, the steering angle psi, the CTE and orientation error, will be updated with respect to delta t. The actuator variables delta (for steering angle) and a for acceleration are constrained within a specific interval. 
+
+![ModelThumbnail][image3]
+(Image from Udacity Self Driving Car Nanodegree course material lession 19)
+
+### Model Predictive Control step with Parameter Optimization
+
+For the future time steps (horizon) is use N=10 with delta_t=0.1, since I wanted the algorithm to run very fast and the motion model is quite rough. It is always desirable to have a large N with small delta_t to 'look' far (some seconds) with a high resolution (small delta_t) in the future horizon. When dealing with N > 20, the algorithm (specifically the optimizer) starts to slow down, and the Cost-Function needs to be adopted to a large future horizon.
+
+So I initialized the variables vector with all necessary elements (state and actuators), and created the constraints vector in the MPC.cpp. This is adopted from the course material implementations.
+
+The main part of this algorithm is located in the FG_eval-class, where the automatic differentiation - API for C++ is used. In this class, the kinematic model and Cost-Function is defined, which will be the one to be minimized.
+
+The definition and fine-tuning of parameters in the Cost-Function will lead to a good or bad optimizer result. I did choose the following penalities with respective weights:
+
+- penalize_epsi = 5.0
+- penalize_cte = 0.5
+- penalize_ref_v_diff = 1.0
+
+- penalize_steer_usage = 0.5
+- penalize_pedal_usage = 0.
+
+- penalize_sequencial_steer_diffs = 200.0
+- penalize_sequencial_v_diffs = 1.0
+
+For example, penalize_steer_usage and penalize_sequencial_steer_diffs are used to make steering smooth like in the following picture: 
+
+![SteeringThumbnail][image4]
+
+(Image from Udacity Self Driving Car Nanodegree course material lession 20)
+
+With reference velocity set to 45 the car drives smoothly over the track. The maximum speed was a velocity of 70, but this may not be quite save any more.
+
+### Deal with Latency
+
+In real applications, there is a delay between computing the actuator controls and the real execution of the control commands. In this project, a virtual latency of 100 ms was implemented using C++ sleep_for()-function. To handle this, I did not use the first actuator result of the optimizer, but the second! 
+Since my delta_t is exactly 100 ms, with taking the second entry (second step in future horizon) for actuators, I managed to deal with that delay.
+
+
+Video of Automatic Driving around the track
+---
+Please have a look at [this Youtube video](https://youtu.be/jsNbhTJOigY) to watch the car drive at velocity_ref = 45.
 
 
 
