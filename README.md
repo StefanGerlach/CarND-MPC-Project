@@ -32,6 +32,14 @@ To control the vehicle based on the simulator given waypoints the following step
 
 ### Waypoint Preprocessing
 
+Since the waypoints are in the simulator map coordinate system, these points are first of all transformed into the car coordinate system. To do this, a homogenous transformation in 2D is applied. A good tutorial for this was mentioned in the course material: [Coordinate Transformations](https://www.miniphysics.com/coordinate-transformation-under-rotation.html). 
+
+### Polynonmial Fitting 
+
+After transformation of the waypoints, a polinomial of 3rd order is fitted into them. The given function polyfit(), which is adapted from [this source](https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L676-L716) is used for this.
+
+
+
 
 
 
